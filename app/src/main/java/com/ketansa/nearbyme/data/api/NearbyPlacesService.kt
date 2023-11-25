@@ -9,7 +9,6 @@ class VenueApiService(retrofit: Retrofit) {
 
     private val api: PlacesApi = retrofit.create(PlacesApi::class.java)
 
-
     suspend fun getVenues(
         perPage: Int,
         page: Int,

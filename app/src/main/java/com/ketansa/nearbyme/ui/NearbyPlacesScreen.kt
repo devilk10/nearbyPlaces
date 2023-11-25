@@ -15,11 +15,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,64 +37,94 @@ import com.ketansa.nearbyme.domain.Venue
 import com.ketansa.nearbyme.ui.viewmodel.NearbyPlacesVM
 import com.ketansa.nearbyme.ui.viewmodel.VenueState
 
+val request = GetVenuesRequest(
+    page = 1,
+    lat = 12.971599,
+    lon = 77.594566,
+    range = "12mi",
+    query = ""
+)
 
 @Composable
 fun NearbyPlacesScreen(nearbyPlacesVM: NearbyPlacesVM) {
+    var range by remember { mutableIntStateOf(12) }
+
     LaunchedEffect(key1 = Unit) {
         nearbyPlacesVM.getVenues(
-            request = GetVenuesRequest(
-                page = 1,
-                lat = 12.971599,
-                lon = 77.594566,
-                range = "12mi",
-                query = ""
-            )
+            request = request
         )
     }
 
     val venueState by nearbyPlacesVM.venueState.collectAsState()
 
-    when (venueState) {
-        is VenueState.Loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        when (venueState) {
+            is VenueState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            is VenueState.Success -> {
+                val places = (venueState as VenueState.Success).response.venues
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    LazyColumn {
+                        items(places.size) { place ->
+                            PlaceItem(place = places[place])
+                            Divider()
+                        }
+                    }
+                }
+            }
+
+            is VenueState.Error -> {
+                val errorMessage = (venueState as VenueState.Error).message
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Error: $errorMessage",
+                    )
+                }
             }
         }
 
-        is VenueState.Success -> {
-            val venues = (venueState as VenueState.Success).response.venues
-            PlaceList(venues)
-        }
-
-        is VenueState.Error -> {
-            val errorMessage = (venueState as VenueState.Error).message
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Error: $errorMessage",
-                )
-            }
-        }
+        Slider(
+            value = range.toFloat(),
+            onValueChange = {
+                range = it.toInt()
+            },
+            valueRange = 1f..100f,
+            steps = 99,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp, bottom = 20.dp)
+        )
     }
 
-}
-
-@Composable
-fun PlaceList(places: List<Venue>) {
-    LazyColumn {
-        items(places.size) { place ->
-            PlaceItem(place = places[place])
-            Divider()
-        }
+    DisposableEffect(range) {
+        nearbyPlacesVM.getVenues(request = request.copy(range = "$range" + "mi"))
+        onDispose { }
     }
+
 }
 
 @Composable

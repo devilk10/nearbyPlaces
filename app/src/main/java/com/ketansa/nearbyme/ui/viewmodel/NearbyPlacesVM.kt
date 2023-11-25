@@ -1,5 +1,6 @@
 package com.ketansa.nearbyme.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ketansa.nearbyme.domain.GetVenuesRequest
@@ -15,11 +16,14 @@ class NearbyPlacesVM(private val getVenuesUseCase: GetVenuesUseCase) : ViewModel
     val venueState: StateFlow<VenueState> = _venueState
 
     fun getVenues(request: GetVenuesRequest) {
+        Log.d("TAG-imptan", "getVenues: getVenues is called, range is ${request.range}, ${request.page}")
         viewModelScope.launch {
             try {
                 val response = getVenuesUseCase.execute(request)
+                Log.d("TAG-imptan", "getVenues: getVenues success response $response")
                 _venueState.value = VenueState.Success(response)
             } catch (e: Exception) {
+                Log.d("TAG-imptan", "getVenues: getVenues error response ${e.localizedMessage}")
                 _venueState.value = VenueState.Error("Error fetching venues")
             }
         }
