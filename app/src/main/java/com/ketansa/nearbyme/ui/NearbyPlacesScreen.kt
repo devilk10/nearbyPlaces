@@ -36,22 +36,23 @@ import com.ketansa.nearbyme.domain.GetVenuesRequest
 import com.ketansa.nearbyme.domain.Venue
 import com.ketansa.nearbyme.ui.viewmodel.NearbyPlacesVM
 import com.ketansa.nearbyme.ui.viewmodel.VenueState
+import kotlin.random.Random
 
 val request = GetVenuesRequest(
     page = 1,
-    lat = 12.971599,
-    lon = 77.594566,
-    range = "12mi",
+    lat = 0.0,
+    lon = 0.0,
+    range = "1mi",
     query = ""
 )
 
 @Composable
-fun NearbyPlacesScreen(nearbyPlacesVM: NearbyPlacesVM) {
-    var range by remember { mutableIntStateOf(12) }
+fun NearbyPlacesScreen(nearbyPlacesVM: NearbyPlacesVM, latitude: Double, longitude: Double) {
+    var range by remember { mutableIntStateOf(1) }
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = Random.nextDouble()) {
         nearbyPlacesVM.getVenues(
-            request = request
+            request = request.copy(range = "$range" + "mi", lat = latitude, lon = longitude)
         )
     }
 

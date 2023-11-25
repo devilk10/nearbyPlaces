@@ -69,6 +69,7 @@ dependencies {
     implementation("com.google.ar:core:1.40.0")
     //coroutines, flow
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
