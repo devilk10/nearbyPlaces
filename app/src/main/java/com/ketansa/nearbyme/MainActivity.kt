@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             NearbyMeTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -63,11 +62,8 @@ class MainActivity : ComponentActivity() {
         var latitude by remember { mutableDoubleStateOf(12.971599) }
         var longitude by remember { mutableDoubleStateOf(77.594566) }
 
-        // Check and request location permissions
         if (checkPermissions()) {
-            // Check if location is enabled
             if (isLocationEnabled()) {
-                // Get last location
                 LaunchedEffect(true) {
                     getLastLocation { location ->
                         latitude = location?.latitude ?: 12.971599
@@ -88,14 +84,12 @@ class MainActivity : ComponentActivity() {
                 startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
             }
         } else {
-            // Permissions are not granted, request them
             requestPermissions()
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation(callback: (Location?) -> Unit) {
-        // Get the last location from FusedLocationClient
         mFusedLocationClient.lastLocation
             .addOnCompleteListener(this) { task ->
                 val location = task.result
@@ -109,7 +103,6 @@ class MainActivity : ComponentActivity() {
 
     @SuppressLint("MissingPermission")
     private fun requestNewLocationData(callback: (Location?) -> Unit) {
-        // Initializing LocationRequest object
         val mLocationRequest = LocationRequest.create().apply {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
             interval = 5000
@@ -117,7 +110,6 @@ class MainActivity : ComponentActivity() {
             numUpdates = 1
         }
 
-        // Setting LocationRequest on FusedLocationClient
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         mFusedLocationClient.requestLocationUpdates(mLocationRequest, object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
@@ -128,7 +120,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkPermissions(): Boolean {
-        // Check if location permissions are granted
         return (ActivityCompat.checkSelfPermission(
             this,
             Manifest.permission.ACCESS_COARSE_LOCATION
@@ -140,19 +131,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestPermissions() {
-        // Request location permissions
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                // Permissions granted, get last location
-                getLastLocation { location ->
-                    // Handle location result if needed
-                }
+                getLastLocation { location -> }
             }
         }.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
     private fun isLocationEnabled(): Boolean {
-        // Check if location services are enabled
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
@@ -164,6 +150,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     NearbyMeTheme {
-//        Greeting("Android")
+        NearbyPlacesScreen(AppContainer.nearbyPlacesVM, 12.971599, 77.594566)
     }
 }
